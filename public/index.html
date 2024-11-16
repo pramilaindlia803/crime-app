@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show and Upload Images</title>
+</head>
+<body>
+    <div class="main_image">
+        <div id="image-container">
+            <!-- Images will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Image upload form -->
+    <div class="upload_form">
+        <h3>Upload an Image</h3>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="image-input" name="image" accept="image/*" required>
+            <button type="submit">Upload Image</button>
+        </form>
+    </div>
+
+    <script>
+        // Function to fetch and display all images
+        async function fetchAndDisplayImages() {
+            try {
+                // Fetch all images from the API
+                const response = await fetch('http://localhost:8000/api/images');
+                const images = await response.json();
+
+                // Get the image container
+                const imageContainer = document.getElementById('image-container');
+                imageContainer.innerHTML = ''; // Clear previous content
+
+                // Loop through the images and create img elements for each one
+                images.forEach(image => {
+                    const img = document.createElement('img');
+                    img.src = image.image_url;
+                    img.alt = `Image ${image.id}`;
+                    img.style.width = '150px'; // Adjust the size as needed
+                    img.style.margin = '10px'; // Add some margin for better layout
+                    imageContainer.appendChild(img);
+                });
+            } catch (error) {
+                console.error('Error fetching the images:', error);
+            }
+        }
+
+        // Call the function to fetch and display images on page load
+        fetchAndDisplayImages();
+
+        // Handle the image upload form submission
+        const uploadForm = document.getElementById('upload-form');
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('image-input');
+            const file = fileInput.files[0]; 
+
+            formData.append('image', file); 
+
+            try {
+                const response = await fetch('http://localhost:8000/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // If upload was successful, refresh the image display
+                    fetchAndDisplayImages();
+                    alert('Image uploaded successfully!');
+                } else {
+                    alert('Failed to upload image.');
+                }
+            } catch (error) {
+                console.error('Error uploading the image:', error);
+            }
+        });
+    </script>
+
+</body>
+</html>
