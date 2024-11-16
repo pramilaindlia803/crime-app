@@ -17,67 +17,86 @@
         <h3>Upload an Image</h3>
         <form id="upload-form" enctype="multipart/form-data">
             <input type="file" id="image-input" name="image" accept="image/*" required>
+            <input type="text" id="description-input" name="description" placeholder="Enter description" />
+            <input type="text" id="user-name-input" name="user_name" placeholder="Enter your name" />
+
             <button type="submit">Upload Image</button>
         </form>
     </div>
 
     <script>
-        // Function to fetch and display all images
         async function fetchAndDisplayImages() {
-            try {
-                // Fetch all images from the API
-                const response = await fetch('http://localhost:8000/api/images');
-                const images = await response.json();
+    try {
+        // Fetch all images from the API
+        const response = await fetch('http://localhost:8000/api/images');
+        const images = await response.json();
 
-                // Get the image container
-                const imageContainer = document.getElementById('image-container');
-                imageContainer.innerHTML = ''; // Clear previous content
+        // Get the image container
+        const imageContainer = document.getElementById('image-container');
+        imageContainer.innerHTML = ''; // Clear previous content
 
-                // Loop through the images and create img elements for each one
-                images.forEach(image => {
-                    const img = document.createElement('img');
-                    img.src = image.image_url;
-                    img.alt = `Image ${image.id}`;
-                    img.style.width = '150px'; // Adjust the size as needed
-                    img.style.margin = '10px'; // Add some margin for better layout
-                    imageContainer.appendChild(img);
-                });
-            } catch (error) {
-                console.error('Error fetching the images:', error);
-            }
-        }
+        // Loop through the images and create HTML for each
+        images.forEach(image => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '20px';
 
-        // Call the function to fetch and display images on page load
-        fetchAndDisplayImages();
+            const img = document.createElement('img');
+            img.src = image.image_url;
+            img.alt = `Image ${image.id}`;
+            img.style.width = '150px';
 
-        // Handle the image upload form submission
-        const uploadForm = document.getElementById('upload-form');
-        uploadForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); 
+            const description = document.createElement('p');
+            description.textContent = `Description: ${image.description || 'N/A'}`;
 
-            const formData = new FormData();
-            const fileInput = document.getElementById('image-input');
-            const file = fileInput.files[0]; 
+            const userName = document.createElement('p');
+            userName.textContent = `Uploaded by: ${image.user_name || 'Anonymous'}`;
 
-            formData.append('image', file); 
+            const createdAt = document.createElement('p');
+            createdAt.textContent = `Uploaded at: ${image.created_at}`;
 
-            try {
-                const response = await fetch('http://localhost:8000/api/upload-image', {
-                    method: 'POST',
-                    body: formData
-                });
+            container.appendChild(img);
+            container.appendChild(description);
+            container.appendChild(userName);
+            container.appendChild(createdAt);
 
-                if (response.ok) {
-                    // If upload was successful, refresh the image display
-                    fetchAndDisplayImages();
-                    alert('Image uploaded successfully!');
-                } else {
-                    alert('Failed to upload image.');
-                }
-            } catch (error) {
-                console.error('Error uploading the image:', error);
-            }
+            imageContainer.appendChild(container);
         });
+    } catch (error) {
+        console.error('Error fetching the images:', error);
+    }
+}
+const uploadForm = document.getElementById('upload-form');
+uploadForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+    const fileInput = document.getElementById('image-input');
+    const file = fileInput.files[0];
+    const description = document.getElementById('description-input').value;
+    const userName = document.getElementById('user-name-input').value;
+
+    formData.append('image', file);
+    formData.append('description', description);
+    formData.append('user_name', userName);
+
+    try {
+        const response = await fetch('http://localhost:8000/api/upload-image', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            fetchAndDisplayImages(); // Refresh the image display
+            alert('Image uploaded successfully!');
+        } else {
+            const errorResponse = await response.json();
+            alert(`Failed to upload image: ${errorResponse.message}`);
+        }
+    } catch (error) {
+        console.error('Error uploading the image:', error);
+    }
+});
+
     </script>
 
 </body>

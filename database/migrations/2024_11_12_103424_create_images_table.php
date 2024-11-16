@@ -11,7 +11,9 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->string('image_path'); // To store the image file path
+            $table->string('image_path'); 
+            $table->string('description')->nullable();
+            $table->string('user_name')->nullable();
             $table->timestamps();
         });
     }
