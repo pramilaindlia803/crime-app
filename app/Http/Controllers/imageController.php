@@ -16,15 +16,13 @@ class ImageController extends Controller
             'user_name' => 'nullable|string|max:255',
         ]);
     
-        // Define the path to the public/assets/images directory
         $destinationPath = public_path('assets/images');
+
     
         $fileName = time() . '_' . $request->file('image')->getClientOriginalName();
     
-        // the public/assets/images directory
         $request->file('image')->move($destinationPath, $fileName);
     
-        //  image details in the database
         $image = Image::create([
             'image_path' => 'assets/images/' . $fileName, 
             'description' => $request->input('description'),
